@@ -3,46 +3,103 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Game Night Tools — free score trackers & party games</title>
-<meta name="description" content="A small collection of free, no-login web tools for game night: card-game and party score trackers, a trivia scoreboard, a bilingual Pictionary game, and a poker odds helper.">
+<title>Catalyst.play — multiplayer human games, optimized for playing together</title>
+<meta name="description" content="Catalyst.play is a growing collection of classic multiplayer games, optimized for co-located play (one screen as the board, phones as remotes) with online play and audio coming soon. Search and pick a game to play tonight.">
 <meta name="google-adsense-account" content="ca-pub-8781477226668093">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8781477226668093" crossorigin="anonymous"></script>
 <style>
-  :root{--ink:#20242b;--bg:#f7f4ec;--card:#fff;--accent:#1b5e3a;--gold:#d4a72c;
-        --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
-        --shadow-h:0 6px 16px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.08);--radius:12px}
+  :root{--bg:#0f1320;--panel:#161b2b;--card:#1c2235;--card-h:#232b43;
+        --accent:#5b8cff;--accent2:#7cf0c8;--muted:#9aa6c2;
+        --shadow:0 2px 8px rgba(0,0,0,.35);--shadow-h:0 10px 28px rgba(0,0,0,.45);--radius:16px}
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-  header{background:var(--accent);color:#f7f4ec;text-align:center;padding:2.2rem 1rem 1.8rem}
-  header h1{margin:0 0 .4rem;font-size:1.9rem}
-  header p{margin:0;opacity:.92;max-width:40rem;margin-inline:auto}
-  main{max-width:880px;margin:0 auto;padding:1.8rem 1rem 3rem}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
-  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border-radius:var(--radius);
-         padding:1.1rem 1.2rem;box-shadow:var(--shadow);border-top:4px solid var(--gold);
-         transition:transform .12s ease,box-shadow .15s ease}
-  a.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-h)}
-  a.card h2{margin:.1rem 0 .35rem;font-size:1.12rem;color:var(--accent)}
-  a.card p{margin:0;font-size:.93rem;color:#444}
-  footer{text-align:center;font-size:.85rem;color:#666;padding:1.5rem 1rem}
+  body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:
+       radial-gradient(1200px 600px at 50% -10%,#1b2742 0%,var(--bg) 60%);color:#eef2fb;
+       line-height:1.5;min-height:100vh}
+  header{text-align:center;padding:2.6rem 1rem 1.2rem}
+  .brand{font-size:2.1rem;font-weight:800;letter-spacing:.5px;margin:0}
+  .brand .dot{color:var(--accent2)}
+  header .tag{margin:.5rem auto 0;color:var(--muted);max-width:42rem}
+  .audiobar{max-width:760px;margin:1.3rem auto 0;background:linear-gradient(90deg,#1d2742,#1a2336);
+            border:1px solid #2b3754;border-radius:var(--radius);padding:.85rem 1rem;display:flex;
+            gap:.8rem;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:var(--shadow)}
+  .audiobar span{font-size:.95rem;color:#dce5fb}
+  .audiobar b{color:var(--accent2)}
+  main{max-width:980px;margin:0 auto;padding:1.4rem 1rem 3rem}
+  .searchwrap{position:relative;max-width:620px;margin:1.6rem auto 2rem}
+  #search{width:100%;padding:1rem 1.1rem 1rem 2.8rem;font-size:1.05rem;border-radius:999px;
+          border:1px solid #2c3a5c;background:var(--panel);color:#eef2fb;box-shadow:var(--shadow)}
+  #search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.25)}
+  .searchwrap::before{content:"🔍";position:absolute;left:1rem;top:50%;transform:translateY(-50%);opacity:.7}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
+  a.game{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+         text-decoration:none;color:inherit;background:var(--card);border-radius:var(--radius);
+         padding:1.4rem 1rem;box-shadow:var(--shadow);border:1px solid #28324d;min-height:140px;
+         transition:transform .12s ease,box-shadow .15s ease,background .15s ease}
+  a.game:hover{transform:translateY(-4px);background:var(--card-h);box-shadow:var(--shadow-h)}
+  a.game .ico{font-size:2.6rem;line-height:1;margin-bottom:.6rem}
+  a.game .name{font-size:1rem;font-weight:600}
+  a.game .sub{font-size:.78rem;color:var(--muted);margin-top:.25rem}
+  #empty{display:none;text-align:center;color:var(--muted);padding:2rem}
+  footer{text-align:center;font-size:.85rem;color:var(--muted);padding:1.8rem 1rem}
+  footer a{color:var(--accent)}
 </style>
 <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "37e136ad11054bb6b59179378878a5d6"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 <header>
-  <h1>Game Night Tools</h1>
-  <p>Free, no-login web tools for game night — score trackers, a trivia scoreboard, a bilingual party game, and a poker odds helper. Pick one and play.</p>
+  <h1 class="brand">Catalyst<span class="dot">.play</span></h1>
+  <p class="tag">Classic multiplayer games, optimized for playing <b>together</b> — one screen as the board, everyone around it. What do you want to play today?</p>
+  <div class="audiobar">
+    <span>🎙️ <b>Voice-first play is coming:</b> talk to start a game and call friends in. For now, just tap a game to play — on one device or cast to a TV.</span>
+  </div>
 </header>
 <main>
-  <div class="grid">
-    <a class="card" href="/hand-and-foot-canasta-scorer/"><h2>Hand &amp; Foot Canasta Scorer</h2><p>Tap-to-score Hand and Foot Canasta with a built-in rules reference.</p></a>
-    <a class="card" href="/card-game-scorer-network/"><h2>Card Game Scorers</h2><p>Score Pinochle, Hollywood Gin, Mexican Train, Tripoley &amp; more — plus a dealer randomizer.</p></a>
-    <a class="card" href="/pub-quiz-trivia-night-scoreboard/"><h2>Pub Quiz Scoreboard</h2><p>A fullscreen, TV-castable trivia-night scoreboard for hosts.</p></a>
-    <a class="card" href="/bunco-night-score-tracker/"><h2>Bunco Night Score Tracker</h2><p>A simple running-score tracker for monthly Bunco clubs.</p></a>
-    <a class="card" href="/bilingual-pictionary-game/"><h2>Bilingual Pictionary</h2><p>A pass-and-draw party game with English + Spanish word lists for mixed-language families.</p></a>
-    <a class="card" href="/poker-odds-helper/"><h2>Poker Odds Helper</h2><p>Quick equity &amp; pot-odds calculator for casual home games.</p></a>
+  <div class="searchwrap">
+    <input id="search" type="search" placeholder="Search games — e.g. cards, trivia, dice, draw…" autocomplete="off" aria-label="Search games">
   </div>
+
+  <div class="grid" id="grid">
+    <a class="game" href="/bilingual-pictionary-game/" data-name="Sketch Fiesta" data-tags="draw guess pictionary bilingual english spanish party board teams">
+      <div class="ico">✏️</div><div class="name">Sketch Fiesta</div><div class="sub">Draw &amp; guess board game</div>
+    </a>
+    <a class="game" href="/hand-and-foot-canasta-scorer/" data-name="Hand &amp; Foot Canasta" data-tags="canasta cards score tracker hand foot rummy melds">
+      <div class="ico">🃏</div><div class="name">Hand &amp; Foot</div><div class="sub">Canasta scorer</div>
+    </a>
+    <a class="game" href="/card-game-scorer-network/" data-name="Card Game Scorers" data-tags="pinochle gin mexican train michigan rummy cards score dealer">
+      <div class="ico">🎴</div><div class="name">Card Scorers</div><div class="sub">Pinochle, Gin, Train &amp; more</div>
+    </a>
+    <a class="game" href="/pub-quiz-trivia-night-scoreboard/" data-name="Pub Quiz Scoreboard" data-tags="trivia quiz pub scoreboard tv cast host teams rounds">
+      <div class="ico">🧠</div><div class="name">Pub Quiz</div><div class="sub">Trivia scoreboard</div>
+    </a>
+    <a class="game" href="/bunco-night-score-tracker/" data-name="Bunco Night" data-tags="bunco dice score tracker party rounds teams">
+      <div class="ico">🎲</div><div class="name">Bunco Night</div><div class="sub">Dice score tracker</div>
+    </a>
+    <a class="game" href="/poker-odds-helper/" data-name="Poker Odds Helper" data-tags="poker odds equity pot cards calculator holdem">
+      <div class="ico">♣️</div><div class="name">Poker Odds</div><div class="sub">Equity &amp; pot odds</div>
+    </a>
+  </div>
+  <div id="empty">No games match that — try “cards”, “dice”, “trivia”, or “draw”.</div>
 </main>
-<footer>Made for game nights. © 2026 · tonatihuai2026.github.io</footer>
+<footer>Catalyst.play — more games &amp; voice/online play coming soon · © 2026 · <a href="/">catalyst.play</a></footer>
+
+<script>
+(function(){
+  var q = document.getElementById("search");
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".game"));
+  var empty = document.getElementById("empty");
+  function norm(s){return (s||"").toLowerCase();}
+  q.addEventListener("input", function(){
+    var t = norm(q.value).trim();
+    var shown = 0;
+    cards.forEach(function(c){
+      var hay = norm(c.getAttribute("data-name") + " " + c.getAttribute("data-tags"));
+      var match = t === "" || hay.indexOf(t) !== -1;
+      c.style.display = match ? "" : "none";
+      if (match) shown++;
+    });
+    empty.style.display = shown === 0 ? "block" : "none";
+  });
+})();
+</script>
 </body>
 </html>
