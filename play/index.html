@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catalyst.play — Co-play preview (tech demo)</title>
+<meta name="description" content="Co-play tech demo: one screen becomes the shared board, phones become controllers, connected peer-to-peer over WebRTC. No backend.">
+<style>
+  :root{--bg:#0f1320;--panel:#161b2b;--card:#1c2235;--card-h:#232b43;
+        --accent:#5b8cff;--accent2:#7cf0c8;--muted:#9aa6c2;
+        --shadow:0 2px 8px rgba(0,0,0,.35);--shadow-h:0 10px 28px rgba(0,0,0,.45);--radius:16px}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:
+       radial-gradient(1200px 600px at 50% -10%,#1b2742 0%,var(--bg) 60%);color:#eef2fb;
+       line-height:1.5;min-height:100vh;overflow-x:hidden}
+  header{text-align:center;padding:1.8rem 1rem .6rem}
+  .brand{font-size:1.8rem;font-weight:800;letter-spacing:.5px;margin:0}
+  .brand .dot{color:var(--accent2)}
+  .preview{display:inline-block;margin:.6rem auto 0;font-size:.78rem;letter-spacing:.6px;
+           text-transform:uppercase;color:#0f1320;background:var(--accent2);
+           padding:.25rem .7rem;border-radius:999px;font-weight:700}
+  header .tag{margin:.6rem auto 0;color:var(--muted);max-width:40rem;font-size:.95rem}
+  main{max-width:680px;margin:0 auto;padding:1rem 1rem 3rem}
+  .panel{background:var(--card);border:1px solid #28324d;border-radius:var(--radius);
+         padding:1.4rem;box-shadow:var(--shadow);margin:1rem 0}
+  .btn{display:block;width:100%;padding:1rem 1.1rem;font-size:1.05rem;font-weight:700;
+       border:none;border-radius:14px;cursor:pointer;margin:.5rem 0;color:#0f1320;
+       background:var(--accent2);transition:transform .1s ease,filter .15s ease}
+  .btn:hover{filter:brightness(1.05)}
+  .btn:active{transform:scale(.98)}
+  .btn.secondary{background:var(--accent);color:#fff}
+  .btn.ghost{background:#222b43;color:#eef2fb;border:1px solid #33405f}
+  input[type=text]{width:100%;padding:.9rem 1rem;font-size:1.05rem;border-radius:12px;
+       border:1px solid #2c3a5c;background:var(--panel);color:#eef2fb;margin:.4rem 0}
+  input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.25)}
+  .hide{display:none!important}
+  .muted{color:var(--muted);font-size:.9rem}
+  .status{font-size:.95rem;margin:.6rem 0;padding:.6rem .8rem;border-radius:10px;background:#1a2336;border:1px solid #2b3754}
+  .status.ok{border-color:#2e6f53;color:var(--accent2)}
+  .status.err{border-color:#7a3140;color:#ff9aa8}
+  footer{text-align:center;font-size:.82rem;color:var(--muted);padding:1.4rem 1rem}
+  footer a{color:var(--accent)}
+
+  /* Board screen */
+  #boardStage{position:fixed;inset:0;z-index:50;display:none;
+      transition:background-color .35s ease;background:#11162a;color:#fff;
+      flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.5rem}
+  #boardStage.live{display:flex}
+  #boardCode{font-size:clamp(3rem,16vw,9rem);font-weight:900;letter-spacing:.15em;
+      line-height:1;text-shadow:0 4px 24px rgba(0,0,0,.5)}
+  #boardJoin{margin-top:.8rem;font-size:clamp(.9rem,3.2vw,1.2rem);opacity:.95;word-break:break-all}
+  #boardQR{margin-top:1rem;background:#fff;padding:10px;border-radius:12px;box-shadow:var(--shadow-h);image-rendering:pixelated}
+  #boardEvent{margin-top:1.1rem;font-size:clamp(1.1rem,4vw,1.8rem);font-weight:800;min-height:1.2em;
+      text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  #boardPeers{margin-top:.9rem;font-size:clamp(.85rem,3vw,1.1rem);opacity:.9;max-width:90vw}
+  #boardPeers .chip{display:inline-block;background:rgba(0,0,0,.3);border-radius:999px;
+      padding:.2rem .7rem;margin:.2rem;border:1px solid rgba(255,255,255,.25)}
+  .boardHint{position:fixed;top:10px;left:0;right:0;text-align:center;font-size:.8rem;
+      opacity:.7;z-index:51;pointer-events:none}
+  #boardStage .corner{position:fixed;bottom:10px;right:12px;z-index:51}
+  #boardStage .corner button{background:rgba(0,0,0,.35);color:#fff;border:1px solid rgba(255,255,255,.3);
+      border-radius:10px;padding:.4rem .7rem;font-size:.8rem;cursor:pointer}
+
+  /* Controller */
+  .colorGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:1rem 0}
+  .swatch{height:84px;border-radius:14px;border:3px solid transparent;cursor:pointer;
+      box-shadow:var(--shadow);transition:transform .08s ease,border-color .15s ease}
+  .swatch:active{transform:scale(.95)}
+  .swatch.sel{border-color:#fff}
+  #tapBtn{height:140px;font-size:2rem;font-weight:900;letter-spacing:.1em}
+</style>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "37e136ad11054bb6b59179378878a5d6"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<!-- BOARD full-screen stage (shown only in board mode) -->
+<div id="boardStage" aria-live="polite">
+  <div class="boardHint">Catalyst.play — Co-play preview · this screen is the BOARD · phones join as controllers</div>
+  <div id="boardCode">----</div>
+  <div id="boardJoin"></div>
+  <canvas id="boardQR" width="160" height="160" aria-label="QR code to join"></canvas>
+  <div id="boardEvent">Waiting for controllers…</div>
+  <div id="boardPeers"></div>
+  <div class="corner"><button id="boardExit">Exit</button></div>
+</div>
+
+<header>
+  <h1 class="brand">Catalyst<span class="dot">.play</span></h1>
+  <div class="preview">Co-play preview · tech demo</div>
+  <p class="tag">One screen is the shared <b>board</b>; phones are <b>controllers</b>, connected directly
+     peer-to-peer over WebRTC. Signaling uses PeerJS's free public broker — there's <b>no backend we run</b>.</p>
+</header>
+
+<main>
+  <!-- START SCREEN -->
+  <section id="startScreen" class="panel">
+    <h2 style="margin-top:0">Try it</h2>
+    <button id="startBoard" class="btn">📺 Start a room on this screen (Board)</button>
+    <p class="muted" style="text-align:center">Open this on a TV/laptop, then scan the QR or type the code on phones.</p>
+    <hr style="border-color:#28324d;margin:1.2rem 0">
+    <button id="showJoin" class="btn ghost">🎮 Join a room as a controller (phone)</button>
+    <div id="joinForm" class="hide" style="margin-top:.8rem">
+      <input id="joinCode" type="text" inputmode="latin" autocapitalize="characters"
+             maxlength="4" placeholder="4-letter code (e.g. ABCD)">
+      <button id="joinGo" class="btn secondary">Connect</button>
+    </div>
+  </section>
+
+  <!-- CONTROLLER SCREEN -->
+  <section id="controllerScreen" class="panel hide">
+    <h2 style="margin-top:0">Controller</h2>
+    <div id="ctrlStatus" class="status">Connecting…</div>
+
+    <div id="nameStep">
+      <label class="muted" for="ctrlName">Your name</label>
+      <input id="ctrlName" type="text" maxlength="16" placeholder="e.g. Ana">
+      <button id="ctrlJoinBtn" class="btn">Join the board</button>
+    </div>
+
+    <div id="controlStep" class="hide">
+      <p class="muted">Pick a color, then tap. Your taps light up the big screen.</p>
+      <div class="colorGrid" id="colorGrid"></div>
+      <button id="tapBtn" class="btn">TAP</button>
+      <p id="ctrlEcho" class="muted" style="text-align:center"></p>
+    </div>
+  </section>
+
+  <p class="muted" style="text-align:center;margin-top:1.5rem">
+    Honest framing: this is an early tech demo of co-play. It depends on a free public WebRTC broker,
+    so connections can vary by network. No accounts, no servers we operate.
+  </p>
+</main>
+
+<footer>Catalyst.play — Co-play preview · <a href="/">back to catalyst.play</a></footer>
+
+<script src="../lib/rng.js"></script>
+<script src="../lib/session.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="coplay.js"></script>
+</body>
+</html>
