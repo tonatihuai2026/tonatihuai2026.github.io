@@ -5,82 +5,272 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Catalyst Gather — multiplayer human games, optimized for playing together</title>
 <meta name="description" content="Catalyst Gather is a growing collection of classic multiplayer games, optimized for co-located play (one screen as the board, phones as remotes) with online play and audio coming soon. Search and pick a game to play tonight.">
+<meta name="theme-color" content="#0b0f1a">
 <meta name="google-adsense-account" content="ca-pub-8781477226668093">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8781477226668093" crossorigin="anonymous"></script>
 <style>
-  :root{--bg:#0f1320;--panel:#161b2b;--card:#1c2235;--card-h:#232b43;
-        --accent:#5b8cff;--accent2:#7cf0c8;--muted:#9aa6c2;
-        --shadow:0 2px 8px rgba(0,0,0,.35);--shadow-h:0 10px 28px rgba(0,0,0,.45);--radius:16px}
+  /* ===== Design tokens (Open Props methodology, inlined / no build) ===== */
+  :root{
+    /* Palette: cohesive deep-indigo arcade with mint + periwinkle accents */
+    --bg:#0b0f1a;
+    --bg-2:#0e1422;
+    --surface:#141b2e;
+    --surface-2:#1a2238;
+    --surface-3:#212c47;
+    --border:#283455;
+    --border-strong:#37456b;
+
+    --text:#eef2fb;
+    --text-soft:#c5cee5;
+    --muted:#94a1c2;
+
+    --accent:#6f9bff;      /* periwinkle */
+    --accent-ink:#a9c2ff;
+    --accent-2:#6ef0c8;    /* mint */
+    --accent-2-ink:#9bf6dd;
+
+    /* Type scale (modular ~1.2) */
+    --f-0:.8125rem;   /* 13px */
+    --f-1:.9375rem;   /* 15px */
+    --f-2:1.0625rem;  /* 17px */
+    --f-3:1.375rem;   /* 22px */
+    --f-4:1.85rem;
+    --f-5:clamp(2.1rem,5vw,3.25rem);
+
+    /* Spacing scale */
+    --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.5rem;
+    --s-6:2rem; --s-7:3rem; --s-8:4rem;
+
+    --radius:14px;
+    --radius-lg:20px;
+    --radius-pill:999px;
+
+    --shadow-1:0 1px 2px rgba(2,6,20,.4);
+    --shadow-2:0 6px 20px rgba(2,6,20,.45);
+    --shadow-3:0 18px 44px rgba(2,6,20,.55);
+    --ring:0 0 0 3px rgba(111,155,255,.45);
+
+    --font:"Inter var","Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    --maxw:1040px;
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:
-       radial-gradient(1200px 600px at 50% -10%,#1b2742 0%,var(--bg) 60%);color:#eef2fb;
-       line-height:1.5;min-height:100vh}
-  header{text-align:center;padding:2.6rem 1rem 1.2rem}
-  .brand{font-size:2.1rem;font-weight:800;letter-spacing:.5px;margin:0}
-  .brand .dot{color:var(--accent2)}
-  header .tag{margin:.5rem auto 0;color:var(--muted);max-width:42rem}
-  .audiobar{max-width:760px;margin:1.3rem auto 0;background:linear-gradient(90deg,#1d2742,#1a2336);
-            border:1px solid #2b3754;border-radius:var(--radius);padding:.85rem 1rem;display:flex;
-            gap:.8rem;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:var(--shadow)}
-  .audiobar span{font-size:.95rem;color:#dce5fb}
-  .audiobar b{color:var(--accent2)}
-  main{max-width:980px;margin:0 auto;padding:1.4rem 1rem 3rem}
-  .searchwrap{position:relative;max-width:620px;margin:1.6rem auto 2rem}
-  #search{width:100%;padding:1rem 1.1rem 1rem 2.8rem;font-size:1.05rem;border-radius:999px;
-          border:1px solid #2c3a5c;background:var(--panel);color:#eef2fb;box-shadow:var(--shadow)}
-  #search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.25)}
-  .searchwrap::before{content:"🔍";position:absolute;left:1rem;top:50%;transform:translateY(-50%);opacity:.7}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
-  a.game{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-         text-decoration:none;color:inherit;background:var(--card);border-radius:var(--radius);
-         padding:1.4rem 1rem;box-shadow:var(--shadow);border:1px solid #28324d;min-height:140px;
-         transition:transform .12s ease,box-shadow .15s ease,background .15s ease}
-  a.game:hover{transform:translateY(-4px);background:var(--card-h);box-shadow:var(--shadow-h)}
-  a.game .ico{font-size:2.6rem;line-height:1;margin-bottom:.6rem}
-  a.game .name{font-size:1rem;font-weight:600}
-  a.game .sub{font-size:.78rem;color:var(--muted);margin-top:.25rem}
-  #empty{display:none;text-align:center;color:var(--muted);padding:2rem}
-  footer{text-align:center;font-size:.85rem;color:var(--muted);padding:1.8rem 1rem}
-  footer a{color:var(--accent)}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;font-family:var(--font);color:var(--text);line-height:1.55;
+    min-height:100vh;font-size:var(--f-2);letter-spacing:-.005em;
+    background:
+      radial-gradient(900px 520px at 12% -8%,rgba(111,155,255,.16),transparent 60%),
+      radial-gradient(760px 480px at 92% 0%,rgba(110,240,200,.12),transparent 58%),
+      linear-gradient(180deg,var(--bg-2),var(--bg) 38%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  a{color:var(--accent-ink)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--s-5)}
+
+  /* ===== Top bar ===== */
+  .topbar{display:flex;align-items:center;justify-content:space-between;
+          padding:var(--s-5) 0 var(--s-4);gap:var(--s-4)}
+  .logo{display:inline-flex;align-items:center;gap:.6rem;font-weight:800;
+        font-size:var(--f-3);letter-spacing:-.02em;text-decoration:none;color:var(--text)}
+  .logo .mark{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;
+        background:linear-gradient(140deg,var(--accent),var(--accent-2));
+        box-shadow:0 6px 16px rgba(111,155,255,.4);color:#0b0f1a}
+  .logo .mark svg{width:21px;height:21px}
+  .logo .gather{background:linear-gradient(90deg,var(--accent-2),var(--accent-ink));
+        -webkit-background-clip:text;background-clip:text;color:transparent}
+  .pill-link{display:inline-flex;align-items:center;gap:.4rem;font-size:var(--f-1);
+        color:var(--text-soft);text-decoration:none;font-weight:600;
+        padding:.5rem .85rem;border:1px solid var(--border);border-radius:var(--radius-pill);
+        background:rgba(255,255,255,.02);transition:border-color .15s,color .15s,background .15s}
+  .pill-link:hover{color:var(--text);border-color:var(--border-strong);background:rgba(255,255,255,.05)}
+  .pill-link svg{width:15px;height:15px}
+
+  /* ===== Hero ===== */
+  .hero{text-align:center;padding:var(--s-6) 0 var(--s-5)}
+  .eyebrow{display:inline-flex;align-items:center;gap:.45rem;font-size:var(--f-0);
+        font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-2-ink);
+        padding:.4rem .8rem;border:1px solid rgba(110,240,200,.28);border-radius:var(--radius-pill);
+        background:rgba(110,240,200,.07)}
+  .eyebrow svg{width:14px;height:14px}
+  h1.brand{font-size:var(--f-5);font-weight:800;line-height:1.05;letter-spacing:-.03em;
+        margin:var(--s-4) 0 0}
+  h1.brand .gather{background:linear-gradient(90deg,var(--accent-2),var(--accent-ink));
+        -webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{margin:var(--s-4) auto 0;color:var(--text-soft);max-width:44rem;font-size:var(--f-2)}
+  .tag b{color:var(--text);font-weight:700}
+
+  /* ===== Search ===== */
+  .searchwrap{position:relative;max-width:580px;margin:var(--s-6) auto var(--s-3)}
+  .searchwrap .si{position:absolute;left:1.05rem;top:50%;transform:translateY(-50%);
+        width:20px;height:20px;color:var(--muted);pointer-events:none}
+  #search{width:100%;padding:1rem 1.2rem 1rem 3rem;font:inherit;font-size:var(--f-2);
+        color:var(--text);border-radius:var(--radius-pill);border:1px solid var(--border-strong);
+        background:linear-gradient(180deg,var(--surface-2),var(--surface));
+        box-shadow:var(--shadow-2);transition:border-color .15s,box-shadow .15s}
+  #search::placeholder{color:var(--muted)}
+  #search:hover{border-color:#43528a}
+  #search:focus{outline:none;border-color:var(--accent);box-shadow:var(--shadow-2),var(--ring)}
+  #search:focus + .si{color:var(--accent-ink)}
+  .hint{text-align:center;color:var(--muted);font-size:var(--f-0);margin:0 auto var(--s-6)}
+
+  /* ===== Audio coming-soon ===== */
+  .audiobar{max-width:760px;margin:0 auto var(--s-6);display:flex;gap:.85rem;align-items:center;
+        justify-content:center;flex-wrap:wrap;text-align:center;
+        background:linear-gradient(120deg,rgba(111,155,255,.10),rgba(110,240,200,.07));
+        border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem;
+        box-shadow:var(--shadow-1)}
+  .audiobar .ai{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:10px;
+        background:rgba(110,240,200,.14);color:var(--accent-2-ink)}
+  .audiobar .ai svg{width:18px;height:18px}
+  .audiobar span{font-size:var(--f-1);color:var(--text-soft)}
+  .audiobar b{color:var(--accent-2-ink);font-weight:700}
+
+  /* ===== Section label ===== */
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;
+        margin:0 0 var(--s-4);gap:var(--s-4)}
+  .sechead h2{font-size:var(--f-3);font-weight:700;letter-spacing:-.02em;margin:0}
+  .sechead .count{font-size:var(--f-0);color:var(--muted);font-weight:600}
+
+  /* ===== Game grid ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--s-4);
+        padding-bottom:var(--s-2)}
+  a.game{position:relative;display:flex;flex-direction:column;text-align:left;
+        text-decoration:none;color:inherit;overflow:hidden;
+        background:linear-gradient(180deg,var(--surface-2),var(--surface));
+        border:1px solid var(--border);border-radius:var(--radius-lg);
+        padding:var(--s-5);box-shadow:var(--shadow-1);
+        transition:transform .16s ease,box-shadow .18s ease,border-color .18s ease}
+  a.game::before{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;
+        background:radial-gradient(380px 160px at 50% -20%,rgba(111,155,255,.18),transparent 70%);
+        transition:opacity .18s ease;pointer-events:none}
+  a.game:hover,a.game:focus-visible{transform:translateY(-5px);border-color:var(--border-strong);
+        box-shadow:var(--shadow-3)}
+  a.game:hover::before,a.game:focus-visible::before{opacity:1}
+  a.game:focus-visible{outline:none;box-shadow:var(--shadow-3),var(--ring)}
+  .game .ico{display:grid;place-items:center;width:50px;height:50px;border-radius:13px;
+        margin-bottom:var(--s-4);color:var(--accent-ink);
+        background:linear-gradient(140deg,rgba(111,155,255,.18),rgba(110,240,200,.12));
+        border:1px solid var(--border);transition:transform .16s ease,color .16s ease}
+  .game:hover .ico{transform:scale(1.06);color:var(--accent-2-ink)}
+  .game .ico svg{width:26px;height:26px;stroke-width:1.9}
+  .game .name{font-size:var(--f-2);font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .game .sub{font-size:var(--f-1);color:var(--muted);margin-top:.25rem;line-height:1.4}
+  .game .go{margin-top:var(--s-4);display:inline-flex;align-items:center;gap:.35rem;
+        font-size:var(--f-0);font-weight:700;color:var(--accent-2-ink);
+        opacity:.85;transition:gap .16s ease,opacity .16s ease}
+  .game:hover .go{gap:.6rem;opacity:1}
+  .game .go svg{width:14px;height:14px}
+
+  #empty{display:none;text-align:center;color:var(--muted);padding:var(--s-7) var(--s-4);
+        border:1px dashed var(--border);border-radius:var(--radius-lg);
+        background:rgba(255,255,255,.015)}
+
+  /* ===== Footer ===== */
+  footer{margin-top:var(--s-8);border-top:1px solid var(--border);
+        padding:var(--s-6) 0 var(--s-7);text-align:center;color:var(--muted);font-size:var(--f-1)}
+  footer a{color:var(--accent-ink);text-decoration:none;font-weight:600}
+  footer a:hover{text-decoration:underline}
+
+  @media (max-width:560px){
+    .topbar .pill-link span{display:none}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+    .game{padding:var(--s-4)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+    a.game:hover,a.game:focus-visible{transform:none}
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 </style>
 <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "37e136ad11054bb6b59179378878a5d6"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
-<header>
-  <h1 class="brand">Catalyst<span class="dot"> Gather</span></h1>
-  <p class="tag">Classic multiplayer games, optimized for playing <b>together</b> — one screen as the board, everyone around it. What do you want to play today?</p>
-  <div class="audiobar">
-    <span>🎙️ <b>Voice-first play is coming:</b> talk to start a game and call friends in. For now, just tap a game to play — on one device or cast to a TV.</span>
-  </div>
-</header>
-<main>
-  <div class="searchwrap">
-    <input id="search" type="search" placeholder="Search games — e.g. cards, trivia, dice, draw…" autocomplete="off" aria-label="Search games">
-  </div>
+<div class="wrap">
+  <nav class="topbar">
+    <a class="logo" href="/" aria-label="Catalyst Gather home">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </span>
+      <span>Catalyst<span class="gather"> Gather</span></span>
+    </a>
+    <a class="pill-link" href="#games">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+      <span>Browse games</span>
+    </a>
+  </nav>
 
-  <div class="grid" id="grid">
-    <a class="game" href="/bilingual-pictionary-game/" data-name="Sketch Fiesta" data-tags="draw guess pictionary bilingual english spanish party board teams">
-      <div class="ico">✏️</div><div class="name">Sketch Fiesta</div><div class="sub">Draw &amp; guess board game</div>
-    </a>
-    <a class="game" href="/hand-and-foot-canasta-scorer/" data-name="Hand &amp; Foot Canasta" data-tags="canasta cards score tracker hand foot rummy melds">
-      <div class="ico">🃏</div><div class="name">Hand &amp; Foot</div><div class="sub">Canasta scorer</div>
-    </a>
-    <a class="game" href="/card-game-scorer-network/" data-name="Card Game Scorers" data-tags="pinochle gin mexican train michigan rummy cards score dealer">
-      <div class="ico">🎴</div><div class="name">Card Scorers</div><div class="sub">Pinochle, Gin, Train &amp; more</div>
-    </a>
-    <a class="game" href="/pub-quiz-trivia-night-scoreboard/" data-name="Pub Quiz Scoreboard" data-tags="trivia quiz pub scoreboard tv cast host teams rounds">
-      <div class="ico">🧠</div><div class="name">Pub Quiz</div><div class="sub">Trivia scoreboard</div>
-    </a>
-    <a class="game" href="/bunco-night-score-tracker/" data-name="Bunco Night" data-tags="bunco dice score tracker party rounds teams">
-      <div class="ico">🎲</div><div class="name">Bunco Night</div><div class="sub">Dice score tracker</div>
-    </a>
-    <a class="game" href="/poker-odds-helper/" data-name="Poker Odds Helper" data-tags="poker odds equity pot cards calculator holdem">
-      <div class="ico">♣️</div><div class="name">Poker Odds</div><div class="sub">Equity &amp; pot odds</div>
-    </a>
-  </div>
-  <div id="empty">No games match that — try “cards”, “dice”, “trivia”, or “draw”.</div>
-</main>
-<footer>Catalyst Gather — more games &amp; voice/online play coming soon · © 2026 · <a href="/">catalystgather.com</a></footer>
+  <header class="hero">
+    <span class="eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Made for playing in the same room
+    </span>
+    <h1 class="brand">Catalyst<span class="gather"> Gather</span></h1>
+    <p class="tag">Classic multiplayer games, optimized for playing <b>together</b> — one screen as the board, everyone gathered around it. What do you want to play tonight?</p>
+
+    <div class="searchwrap">
+      <input id="search" type="search" placeholder="Search games — e.g. cards, trivia, dice, draw…" autocomplete="off" aria-label="Search games" aria-describedby="search-hint">
+      <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <p class="hint" id="search-hint">Tap a game to start — on one device, or cast to a TV.</p>
+
+    <div class="audiobar">
+      <span class="ai" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </span>
+      <span><b>Voice-first play is coming:</b> talk to start a game and call friends in. For now, just tap a game to play — on one device or cast to a TV.</span>
+    </div>
+  </header>
+
+  <main id="games">
+    <div class="sechead">
+      <h2>Pick a game</h2>
+      <span class="count">6 games ready to play</span>
+    </div>
+
+    <div class="grid" id="grid">
+      <a class="game" href="/bilingual-pictionary-game/" data-name="Sketch Fiesta" data-tags="draw guess pictionary bilingual english spanish party board teams">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></span>
+        <div class="name">Sketch Fiesta</div>
+        <div class="sub">Draw &amp; guess board game</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="game" href="/hand-and-foot-canasta-scorer/" data-name="Hand &amp; Foot Canasta" data-tags="canasta cards score tracker hand foot rummy melds">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="11" height="15" rx="2"/><path d="M17 6l3.5 1a2 2 0 0 1 1.4 2.45l-2.6 9.2"/><path d="M7.5 9.5l1.5 2 1.5-2"/></svg></span>
+        <div class="name">Hand &amp; Foot</div>
+        <div class="sub">Canasta scorer</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="game" href="/card-game-scorer-network/" data-name="Card Game Scorers" data-tags="pinochle gin mexican train michigan rummy cards score dealer">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="9" height="13" rx="2"/><rect x="13" y="6" width="9" height="13" rx="2"/><path d="M6.5 10v5"/><path d="M17.5 10v5"/></svg></span>
+        <div class="name">Card Scorers</div>
+        <div class="sub">Pinochle, Gin, Train &amp; more</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="game" href="/pub-quiz-trivia-night-scoreboard/" data-name="Pub Quiz Scoreboard" data-tags="trivia quiz pub scoreboard tv cast host teams rounds">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/><circle cx="12" cy="12" r="10"/></svg></span>
+        <div class="name">Pub Quiz</div>
+        <div class="sub">Trivia scoreboard</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="game" href="/bunco-night-score-tracker/" data-name="Bunco Night" data-tags="bunco dice score tracker party rounds teams">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg></span>
+        <div class="name">Bunco Night</div>
+        <div class="sub">Dice score tracker</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="game" href="/poker-odds-helper/" data-name="Poker Odds Helper" data-tags="poker odds equity pot cards calculator holdem">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.65-7 10-7 10z"/><path d="M12 21v-2"/></svg></span>
+        <div class="name">Poker Odds</div>
+        <div class="sub">Equity &amp; pot odds</div>
+        <span class="go">Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+    </div>
+    <div id="empty">No games match that — try “cards”, “dice”, “trivia”, or “draw”.</div>
+  </main>
+
+  <footer>Catalyst Gather — more games &amp; voice/online play coming soon · © 2026 · <a href="/">catalystgather.com</a></footer>
+</div>
 
 <script>
 (function(){
